@@ -115,10 +115,62 @@ export async function compressImageToFitLimit(
     current = await compressImage(base64Image, 320, 0.4);
   }
 
-  // Final fallback: very aggressive compression
-  if (current.length > targetLimitCharacters) {
-    current = await compressImage(base64Image, 240, 0.3);
-  }
-
-  return current;
+    return current;
 }
+
+/**
+ * Compress image Blob for upload
+ * Reduces file size while maintaining quality
+ * @param blob - Image blob
+ * @param maxWidth - Maximum width in pixels (default 1280 for camera uploads)
+ * @param quality - JPEG quality 0-1 (default 0.8 for good quality)
+ * @returns Compressed Blob
+ */
+export async function compressImageBlob(
+  blob: Blob,
+  maxWidth: number = 1280,
+  quality: number = 0.8
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const base64 = e.target?.result as string;
+          const compressed = await compressImage(base64, maxWidth, quality);
+          
+          // Convert back to Blob
+          const binaryString = atob(compressed.split(",")[1]);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          const compressedBlob = new Blob([bytes], { type: "image/jpeg" });
+          resolve(compressedBlob);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Failed to read image blob"));
+      };
+
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+/**
+ * Get Blob size in MB
+ * @param blob - Image blob
+ * @returns Size in MB
+ */
+export function getBlobSizeMB(blob: Blob): number {
+  return (blob.size / 1024 / 1024).toFixed(2) as any;
+}
+
