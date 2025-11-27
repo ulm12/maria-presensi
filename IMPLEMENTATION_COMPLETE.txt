@@ -1,0 +1,296 @@
+```
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                  📤 GOOGLE DRIVE + GOOGLE SHEETS INTEGRATION                  ║
+║                         Upload Otomatis + Auto-Save Link                      ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+✅ SEMUA FILE SUDAH DIBUAT & DI-PUSH KE GITHUB
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 STRUKTUR FILE YANG DIBUAT:
+
+Backend Logic:
+├── lib/google-api.ts
+│   ├── uploadToDrive(fileBuffer, fileName, folderId?)
+│   ├── saveToSheets(spreadsheetId, range, values)
+│   ├── ensureSheetExists(spreadsheetId, sheetTitle)
+│   └── createSheetHeader(spreadsheetId, sheetTitle, headers)
+│
+├── lib/attendance-drive-service.ts
+│   ├── uploadAttendanceRecord(record, spreadsheetId, driveFolderId)
+│   ├── uploadBatchAttendance(records, ...)
+│   └── getAttendanceSummary(spreadsheetId, date)
+│
+└── lib/image-compression.ts (enhanced)
+    ├── compressImageBlob(blob, maxWidth?, quality?)
+    └── getBlobSizeMB(blob)
+
+API Endpoints:
+├── app/api/upload-to-drive/route.ts
+│   ├── POST /api/upload-to-drive (upload file & save link)
+│   └── GET /api/upload-to-drive (API docs)
+│
+└── app/api/attendance/route.ts
+    ├── POST /api/attendance (submit attendance)
+    └── GET /api/attendance (API docs)
+
+React Components:
+├── components/drive-upload.tsx
+│   └── <DriveUploadComponent /> - Upload UI dengan form
+│
+└── components/camera-attendance.tsx
+    └── <CameraAttendanceComponent /> - Attendance dengan camera
+
+Documentation:
+├── QUICK_START_GOOGLE_DRIVE.md          ← START HERE! (5 menit setup)
+├── GOOGLE_DRIVE_SETUP.md               (Full docs & reference)
+├── GOOGLE_CONFIG_EXAMPLE.md            (Configuration guide)
+└── IMPLEMENTATION_SUMMARY.md           (Overview sistem)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 QUICK START (3 STEPS):
+
+1. Setup Google Cloud (5 min)
+   □ Buka https://console.cloud.google.com/
+   □ Create/Select Project
+   □ Enable: Google Drive API + Google Sheets API
+   □ Create Service Account → Download JSON
+   □ Rename ke: service-account.json
+   □ Letakkan di: root project folder
+
+2. Share dengan Service Account (2 min)
+   □ Copy email dari service-account.json
+   □ Share Google Sheets → "Editor"
+   □ Share Google Drive Folder → "Editor"
+
+3. Get IDs (1 min)
+   □ Spreadsheet ID dari URL: docs.google.com/spreadsheets/d/[COPY THIS]
+   □ Folder ID dari URL: drive.google.com/drive/folders/[COPY THIS]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 USAGE EXAMPLES:
+
+Option 1: React Component (Simplest)
+├── import { DriveUploadComponent } from "@/components/drive-upload";
+├── export default function Page() {
+│   return <DriveUploadComponent />;
+│ }
+└── Result: Full UI dengan form + error handling
+
+Option 2: Attendance dengan Camera
+├── import { CameraAttendanceComponent } from "@/components/camera-attendance";
+├── export default function Page() {
+│   return <CameraAttendanceComponent />;
+│ }
+└── Result: Capture foto + auto check-in/out + geolocation
+
+Option 3: API Call
+├── const formData = new FormData();
+├── formData.append("file", file);
+├── formData.append("spreadsheetId", "YOUR_SHEET_ID");
+├── const res = await fetch("/api/upload-to-drive", {
+│     method: "POST",
+│     body: formData
+│   });
+└── const data = await res.json();
+
+Option 4: Direct Backend
+├── import { uploadToDrive, saveToSheets } from "@/lib/google-api";
+├── const file = await uploadToDrive(buffer, "name.jpg", "folderID");
+├── await saveToSheets("sheetID", "A:D", [[file.viewLink, ...]]);
+└── Result: File di Drive + link di Sheets
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 WHAT GETS SAVED:
+
+Google Drive:
+└── Folder Anda
+    ├── photo-001.jpg
+    ├── photo-002.jpg
+    └── ... (semua file ter-upload)
+
+Google Sheets:
+├── Uploads Sheet:
+│   | Nama File | View Link | Download Link | Waktu Upload |
+│   |-----------|-----------|---------------|--------------|
+│   | photo.jpg | [Link]    | [Link]        | 28/11/2025   |
+│
+└── Attendance_2025-11 Sheet:
+    | Waktu | ID | Nama | Status | Lokasi | Links |
+    |------|----|----|--------|-------|-------|
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ FITUR:
+
+✅ Upload ke Google Drive
+   └─ Support custom folder, custom filename
+
+✅ Auto-Save Link ke Google Sheets
+   └─ View link + Download link
+
+✅ Attendance dengan Camera
+   ├─ Capture foto langsung
+   ├─ Auto geolocation
+   ├─ Check-in/Check-out toggle
+   └─ Automatic sheet creation
+
+✅ Error Handling
+   └─ Validation, error messages, retry logic
+
+✅ Security
+   ├─ service-account.json di .gitignore
+   ├─ Safe credentials management
+   └─ Best practices implemented
+
+✅ Image Compression
+   ├─ Reduce file size sebelum upload
+   ├─ Maintain quality
+   └─ Support Blob/File
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔐 SECURITY STATUS:
+
+✅ service-account.json          (IN .gitignore - PROTECTED)
+✅ .env.local support            (Optional env vars)
+✅ Input validation              (Client + Server)
+✅ Error handling                (Graceful errors)
+✅ Credential management         (Service Account)
+✅ Best practices                (Followed Google recommendations)
+
+TIDAK akan ter-upload ke Git! ✨
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 DOCUMENTATION:
+
+Start here: QUICK_START_GOOGLE_DRIVE.md
+├─ Setup dalam 5 menit
+├─ Quick examples
+├─ Troubleshooting
+└─ Next steps
+
+Full docs: GOOGLE_DRIVE_SETUP.md
+├─ Detailed explanation
+├─ API reference
+├─ Backend functions
+├─ Security tips
+└─ Monitoring guide
+
+Setup guide: GOOGLE_CONFIG_EXAMPLE.md
+├─ Step-by-step setup
+├─ Configuration details
+├─ Environment variables
+└─ Verification
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔗 NEXT STEPS:
+
+1. Read: QUICK_START_GOOGLE_DRIVE.md (10 minutes)
+2. Setup: Create service-account.json (5 minutes)
+3. Test: Try <DriveUploadComponent /> atau <CameraAttendanceComponent />
+4. Integrate: Add ke halaman Anda
+5. Deploy: Push to production
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 SYSTEM ARCHITECTURE:
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    CLIENT (React/TypeScript)                    │
+├─────────────────────────────────────────────────────────────────┤
+│  DriveUploadComponent │ CameraAttendanceComponent               │
+│  └─ Form input        │ └─ Camera capture                       │
+│  └─ File select       │ └─ Geolocation                          │
+│  └─ Error handling    │ └─ Check-in/out                         │
+└────────────────────────────────────────────────────────────────┬┘
+                          │ POST
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               NEXT.JS API ENDPOINTS (Server)                    │
+├─────────────────────────────────────────────────────────────────┤
+│  /api/upload-to-drive      │ /api/attendance                    │
+│  └─ Validate input         │ └─ Get employee data               │
+│  └─ Convert to buffer      │ └─ Get geolocation                 │
+│  └─ Call uploadToDrive()   │ └─ Call uploadAttendanceRecord()   │
+└────────────────────────────────────────────────────────────────┬┘
+                          │ Uses
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              TYPESCRIPT UTILITIES (lib/)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  google-api.ts                                                   │
+│  ├─ Google Auth (JWT Service Account)                           │
+│  ├─ uploadToDrive() ─────→ Google Drive API                     │
+│  ├─ saveToSheets() ──────→ Google Sheets API                    │
+│  └─ ensureSheetExists() ─→ Auto-create sheets                   │
+│                                                                  │
+│  attendance-drive-service.ts                                    │
+│  ├─ uploadAttendanceRecord()                                    │
+│  └─ uploadBatchAttendance()                                     │
+│                                                                  │
+│  image-compression.ts                                           │
+│  ├─ compressImageBlob()                                         │
+│  └─ getBlobSizeMB()                                             │
+└────────────────────────────────────────────────────────────────┬┘
+                          │ Calls
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              GOOGLE CLOUD APIs (External)                       │
+├─────────────────────────────────────────────────────────────────┤
+│  Google Drive API ──→ Store files                               │
+│  Google Sheets API ─→ Save links & metadata                     │
+└─────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ STATUS:
+
+Project:        maria-presensi
+Date:           November 28, 2025
+Files:          10 created/modified
+Commits:        2 commits
+Status:         ✅ PRODUCTION READY
+Documentation:  ✅ COMPLETE
+Security:       ✅ SECURED
+
+Ready to use! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+## 🎯 RINGKASAN SINGKAT:
+
+Anda sekarang punya sistem **upload otomatis ke Google Drive + auto-save link ke Google Sheets**
+
+### 3 Cara Penggunaan:
+
+1. **React Component** (Paling mudah)
+   ```tsx
+   <DriveUploadComponent />
+   ```
+
+2. **Attendance dengan Camera** (Untuk presensi)
+   ```tsx
+   <CameraAttendanceComponent />
+   ```
+
+3. **API Call** (Untuk integrasi custom)
+   ```
+   POST /api/upload-to-drive
+   POST /api/attendance
+   ```
+
+### Setup: 5-10 menit total
+1. Create service account di Google Cloud (5 min)
+2. Share Sheets & Folder (2 min)
+3. Copy IDs (1 min)
+4. Done! ✨
+
+Semua file sudah di-push ke GitHub. Baca `QUICK_START_GOOGLE_DRIVE.md` untuk details!
